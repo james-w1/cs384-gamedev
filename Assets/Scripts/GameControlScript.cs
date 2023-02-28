@@ -15,7 +15,12 @@ public class GameControlScript : MonoBehaviour
 
     private bool inState = false;
 
-    // Start is called before the first frame update
+    /*
+     * Start is called before the first frame update
+     *
+     * In this case we change the gameState var and enter the 
+     * StateChangeHandler() func to set stuff up.
+     */
     void Start()
     {
         this.gameState = GameState.BEGIN;
@@ -26,7 +31,9 @@ public class GameControlScript : MonoBehaviour
     void Update()
     {
         if (!inState)
+        {
             StartCoroutine(StateChangeHandler());
+        }
     }
 
     /*
@@ -35,8 +42,6 @@ public class GameControlScript : MonoBehaviour
     IEnumerator StateChangeHandler() 
     {
         inState = true;
-        // switch on GameState so i can just keep calling this method with the current state instead of having to call a diff 
-        // method every time.
         switch (this.gameState)
         {
             case GameState.BEGIN:
@@ -47,7 +52,7 @@ public class GameControlScript : MonoBehaviour
                 {
                     // do player turn 
                     // wait for turn finished event from friendly tank object
-                    yield return new WaitUntil(true); // wait for some sort of event
+                    yield return new WaitUntil(true); 
                 }
                 gameState = GameState.CPU_TURN;
                 break;
@@ -68,10 +73,12 @@ public class GameControlScript : MonoBehaviour
     {
         /*
          * ## Notes:
-         *  - CPU tanks will need to move if they have been close to a prev player shot
+         *  - CPU tanks will need to move if they have been close to a prev 
+         *      player shot
          *  - They will need to adjust fire if they missed a prev shot
          *  - if they havent done either then 50/50 move or shoot
-         *      - if it hasnt shot yet then introduce some random error to the shot to give the player a chance
+         *      - if it hasnt shot yet then introduce some random error to the 
+         *          shot to give the player a chance
          */
     }
 
