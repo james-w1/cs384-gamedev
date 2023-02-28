@@ -7,11 +7,13 @@ enum PlayerTurnType { MOVE, ATTACK, RANGE_FIND }
 
 public class GameControlScript : MonoBehaviour
 {
-    public List<GameObject> friendlies;
-    public List<GameObject> enemies;
+    [SerializeField] List<GameObject> friendlies;
+    [SerializeField] List<GameObject> enemies;
 
-    public GameState gameState;
-    public GameState prevState;
+    [SerializeField] GameObject terrain;
+
+    private GameState gameState;
+    private GameState prevState;
 
     private bool inState = false;
 
@@ -48,11 +50,16 @@ public class GameControlScript : MonoBehaviour
                 BeginLevel();
                 break;
             case GameState.PLAYER_TURN:
+                if (friendlies.Equals(null)) {
+                    Debug.Log("There are no friendlies in the scene");
+                    yield break;
+                }
                 foreach (GameObject player in friendlies)
                 {
                     // do player turn 
                     // wait for turn finished event from friendly tank object
-                    yield return new WaitUntil(true); 
+                    //yield return new WaitUntil(true); 
+                    yield return StartCoroutine(DoPlayerMoveTurn(player));
                 }
                 gameState = GameState.CPU_TURN;
                 break;
@@ -63,7 +70,36 @@ public class GameControlScript : MonoBehaviour
                 EndLevel();
                 break;
         }
+        yield return new WaitForSeconds(1);
         inState = false;
+    }
+
+    IEnumerator DoPlayerMoveTurn(GameObject friend)
+    {
+        bool hasSelected = false;
+        RaycastHit2D rayHit;
+        var mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorldPos.z = 0f; // zero z
+        
+        if (!terrain) yield break;
+
+        while (!hasSelected)
+        {
+            mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mouseWorldPos.z = 0f; // zero z
+
+            rayHit = Physics2D.Raycast(mouseWorldPos, Vector2.down);
+
+            if (rayHit.collider != null)
+            {
+                Debug.Log(rayHit.point.x);
+                Debug.Log(rayHit.point.y);
+
+                friend.transform.position = rayHit.point; // obvs change this lmao
+            }
+
+            yield return new WaitForSeconds(1f);
+        }
     }
 
     /*
@@ -80,6 +116,7 @@ public class GameControlScript : MonoBehaviour
          *      - if it hasnt shot yet then introduce some random error to the 
          *          shot to give the player a chance
          */
+        yield return new WaitForSeconds(1);
     }
 
     /*
@@ -87,6 +124,9 @@ public class GameControlScript : MonoBehaviour
      */
     void BeginLevel()
     {
+        StopAllCoroutines();
+        gameState = GameState.PLAYER_TURN;
+        StartCoroutine(StateChangeHandler());
         // load the player and enemies from the level file
     }
 
