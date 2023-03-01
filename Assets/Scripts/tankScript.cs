@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class tankScript : MonoBehaviour
 {
+    [SerializeField] string name;
     [SerializeField] int health;
     [SerializeField] bool knockedOut;
 
@@ -25,6 +26,10 @@ public class tankScript : MonoBehaviour
     public bool damage(int damage)
     {
         this.health -= damage;
+
+        if (this.health <= 0)
+            this.knockOut();
+
         return this.health <= 0;
     }
 }

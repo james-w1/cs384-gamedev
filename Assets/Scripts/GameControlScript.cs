@@ -14,13 +14,15 @@ public class GameControlScript : MonoBehaviour
     [SerializeField] GameObject moveSelector;
 
     private GameState gameState;
-    private GameState prevState;
+    private PlayerTurnType playerTurnType;
 
     private Vector3 lastMousePos;
     private Vector3 lastMousePosWClick;
 
     private bool inState = false;
     private bool hasSelected = false;
+
+    private float speed = 0.005f; // dont ask
 
     /*
      * Start is called before the first frame update
@@ -37,7 +39,7 @@ public class GameControlScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (gameState == GameState.PLAYER_TURN)
+        if (gameState == GameState.PLAYER_TURN && playerTurnType == PlayerTurnType.MOVE)
         {
             lastMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if (Input.GetMouseButtonDown(1))
@@ -70,22 +72,37 @@ public class GameControlScript : MonoBehaviour
                 }
                 foreach (GameObject player in friendlies)
                 {
+                    playerTurnType = DecidePlayerTurn();
+                    
                     // do player turn 
                     // wait for turn finished event from friendly tank object
-                    //yield return new WaitUntil(true); 
-                    yield return StartCoroutine(DoPlayerMoveTurn(player));
+                    switch (playerTurnType)
+                    {
+                        case PlayerTurnType.ATTACK:
+                            yield return StartCoroutine(DoPlayerAttackTurn(player));
+                            break;
+                        case PlayerTurnType.MOVE:
+                            yield return StartCoroutine(DoPlayerMoveTurn(player));
+                            break;
+                    }
                 }
                 gameState = GameState.CPU_TURN;
                 break;
             case GameState.CPU_TURN:
-                DoCPUTurn();
+                yield return StartCoroutine(DoCPUTurn());
+                gameState = GameState.PLAYER_TURN;
                 break;
             case GameState.END:
                 EndLevel();
                 break;
         }
-        yield return new WaitForSeconds(1);
         inState = false;
+    }
+
+    IEnumerator DoPlayerAttackTurn(GameObject friend)
+    {
+        Debug.Log("Do Player Attack Turn");
+        yield break;
     }
 
     IEnumerator DoPlayerMoveTurn(GameObject friend)
@@ -93,7 +110,8 @@ public class GameControlScript : MonoBehaviour
         hasSelected = false;
         RaycastHit2D rayHit = Physics2D.Raycast(lastMousePosWClick, Vector2.down);
            
-        if (!terrain) yield break;
+        if (!terrain || !friend)
+            yield break;
 
         while (true)
         {
@@ -107,17 +125,17 @@ public class GameControlScript : MonoBehaviour
                 break;
             }
 
-            yield return 0;
+            yield return new WaitForEndOfFrame();
         }
 
-        while (Vector2.Distance(friend.transform.position, rayHit.point) > 0.005f)
+        while (Vector2.Distance(friend.transform.position, rayHit.point) > speed)
         {
-            friend.transform.position = Vector2.MoveTowards(friend.transform.position, rayHit.point, 0.005f);
-            yield return 0;
+            friend.transform.position = Vector2.MoveTowards(friend.transform.position, rayHit.point, speed);
+            yield return new WaitForEndOfFrame();
         }
 
         friend.transform.position = rayHit.point; // obvs change this lmao
-        yield return new WaitForSeconds(0.1f);
+        Debug.Log("Player Move Turn Done");
     }
 
     /*
@@ -134,7 +152,13 @@ public class GameControlScript : MonoBehaviour
          *      - if it hasnt shot yet then introduce some random error to the 
          *          shot to give the player a chance
          */
-        yield return new WaitForSeconds(1);
+        Debug.Log("Do CPU");
+        yield return new WaitForSeconds(3f);
+    }
+
+    PlayerTurnType DecidePlayerTurn()
+    {
+        return PlayerTurnType.MOVE;
     }
 
     /*
@@ -144,7 +168,6 @@ public class GameControlScript : MonoBehaviour
     {
         StopAllCoroutines();
         gameState = GameState.PLAYER_TURN;
-        StartCoroutine(StateChangeHandler());
         // load the player and enemies from the level file
     }
 
