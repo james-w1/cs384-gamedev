@@ -11,11 +11,16 @@ public class GameControlScript : MonoBehaviour
     [SerializeField] List<GameObject> enemies;
 
     [SerializeField] GameObject terrain;
+    [SerializeField] GameObject moveSelector;
 
     private GameState gameState;
     private GameState prevState;
 
+    private Vector3 lastMousePos;
+    private Vector3 lastMousePosWClick;
+
     private bool inState = false;
+    private bool hasSelected = false;
 
     /*
      * Start is called before the first frame update
@@ -32,6 +37,15 @@ public class GameControlScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (gameState == GameState.PLAYER_TURN)
+        {
+            lastMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            if (Input.GetMouseButtonDown(1))
+            {
+                lastMousePosWClick = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                hasSelected = true;
+            }
+        }
         if (!inState)
         {
             StartCoroutine(StateChangeHandler());
@@ -76,30 +90,34 @@ public class GameControlScript : MonoBehaviour
 
     IEnumerator DoPlayerMoveTurn(GameObject friend)
     {
-        bool hasSelected = false;
-        RaycastHit2D rayHit;
-        var mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPos.z = 0f; // zero z
-        
+        hasSelected = false;
+        RaycastHit2D rayHit = Physics2D.Raycast(lastMousePosWClick, Vector2.down);
+           
         if (!terrain) yield break;
 
-        while (!hasSelected)
+        while (true)
         {
-            mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            mouseWorldPos.z = 0f; // zero z
+            rayHit = Physics2D.Raycast(lastMousePos, Vector2.down);
+            moveSelector.transform.position = rayHit.point;
 
-            rayHit = Physics2D.Raycast(mouseWorldPos, Vector2.down);
-
-            if (rayHit.collider != null)
+            if (hasSelected)
             {
-                Debug.Log(rayHit.point.x);
-                Debug.Log(rayHit.point.y);
-
-                friend.transform.position = rayHit.point; // obvs change this lmao
+                rayHit = Physics2D.Raycast(lastMousePosWClick, Vector2.down);
+                hasSelected = false;
+                break;
             }
 
-            yield return new WaitForSeconds(1f);
+            yield return 0;
         }
+
+        while (Vector2.Distance(friend.transform.position, rayHit.point) > 0.005f)
+        {
+            friend.transform.position = Vector2.MoveTowards(friend.transform.position, rayHit.point, 0.005f);
+            yield return 0;
+        }
+
+        friend.transform.position = rayHit.point; // obvs change this lmao
+        yield return new WaitForSeconds(0.1f);
     }
 
     /*
