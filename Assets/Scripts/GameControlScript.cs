@@ -72,7 +72,7 @@ public class GameControlScript : MonoBehaviour
                 }
                 foreach (GameObject player in friendlies)
                 {
-                    playerTurnType = DecidePlayerTurn();
+                    yield return StartCoroutine(DecidePlayerTurn());
                     
                     // do player turn 
                     // wait for turn finished event from friendly tank object
@@ -134,7 +134,7 @@ public class GameControlScript : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
-        friend.transform.position = rayHit.point; // obvs change this lmao
+        friend.transform.position = rayHit.point;
         Debug.Log("Player Move Turn Done");
     }
 
@@ -156,9 +156,29 @@ public class GameControlScript : MonoBehaviour
         yield return new WaitForSeconds(3f);
     }
 
-    PlayerTurnType DecidePlayerTurn()
+    IEnumerator DecidePlayerTurn()
     {
-        return PlayerTurnType.MOVE;
+        Debug.Log("Select A Turn Type");
+        var keyMapping = new Dictionary<string, PlayerTurnType>(){
+            {"M", PlayerTurnType.MOVE},
+            {"A", PlayerTurnType.ATTACK},
+            {"R", PlayerTurnType.RANGE_FIND},
+        };
+        string chosenKey = null;
+
+        while (chosenKey == null)
+        {
+            if (Input.GetKey(KeyCode.A))
+                chosenKey = "A";
+            if (Input.GetKey(KeyCode.M))
+                chosenKey = "M";
+            if (Input.GetKey(KeyCode.R))
+                chosenKey = "R";
+
+            yield return 0;
+        }
+        
+        playerTurnType = keyMapping[chosenKey];
     }
 
     /*

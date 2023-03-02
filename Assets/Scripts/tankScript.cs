@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class tankScript : MonoBehaviour
 {
-    [SerializeField] string name;
+    [SerializeField] string userName;
     [SerializeField] int health;
     [SerializeField] bool knockedOut;
 
