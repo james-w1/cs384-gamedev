@@ -13,6 +13,8 @@ public class GameControlScript : MonoBehaviour
     [SerializeField] GameObject terrain;
     [SerializeField] GameObject moveSelector;
 
+    private Renderer moveSelectorRenderer;
+
     private GameState gameState;
     private PlayerTurnType playerTurnType;
 
@@ -22,7 +24,7 @@ public class GameControlScript : MonoBehaviour
     private bool inState = false;
     private bool hasSelected = false;
 
-    private float speed = 0.005f; // dont ask
+    private float speed = 0.003f; // dont ask
 
     /*
      * Start is called before the first frame update
@@ -115,6 +117,7 @@ public class GameControlScript : MonoBehaviour
 
         while (true)
         {
+            moveSelectorRenderer.enabled = true;
             rayHit = Physics2D.Raycast(lastMousePos, Vector2.down);
             moveSelector.transform.position = rayHit.point;
 
@@ -128,13 +131,21 @@ public class GameControlScript : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
+        float sTime = Time.time;
         while (Vector2.Distance(friend.transform.position, rayHit.point) > speed)
         {
+            if (Time.time - sTime > 5.0) {
+                Debug.Log("Move Timed Out...");
+                moveSelectorRenderer.enabled = false;
+                yield break;
+            }
+
             friend.transform.position = Vector2.MoveTowards(friend.transform.position, rayHit.point, speed);
             yield return new WaitForEndOfFrame();
         }
 
         friend.transform.position = rayHit.point;
+        moveSelectorRenderer.enabled = false;
         Debug.Log("Player Move Turn Done");
     }
 
@@ -188,6 +199,8 @@ public class GameControlScript : MonoBehaviour
     {
         StopAllCoroutines();
         gameState = GameState.PLAYER_TURN;
+        moveSelectorRenderer = moveSelector.GetComponent<Renderer>(); 
+        moveSelectorRenderer.enabled = false;
         // load the player and enemies from the level file
     }
 
