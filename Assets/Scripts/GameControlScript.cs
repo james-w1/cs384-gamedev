@@ -7,13 +7,16 @@ enum PlayerTurnType { MOVE, ATTACK, RANGE_FIND }
 
 public class GameControlScript : MonoBehaviour
 {
-    [SerializeField] List<GameObject> friendlies;
-    [SerializeField] List<GameObject> enemies;
+    [SerializeField] private List<GameObject> friendlies;
+    [SerializeField] private List<GameObject> enemies;
 
-    [SerializeField] GameObject terrain;
-    [SerializeField] GameObject moveSelector;
+    [SerializeField] private GameObject terrain;
+    [SerializeField] private GameObject moveSelector;
 
     private Renderer moveSelectorRenderer;
+    private RaycastHit2D rayHit;
+    private Vector3 validMovePos;
+    private Camera camera;
 
     private GameState gameState;
     private PlayerTurnType playerTurnType;
@@ -25,6 +28,14 @@ public class GameControlScript : MonoBehaviour
     private bool hasSelected = false;
 
     private float speed = 0.003f; // dont ask
+    private Dictionary<string, PlayerTurnType> keyMapping 
+        = new Dictionary<string, PlayerTurnType>()
+    {
+        {"M", PlayerTurnType.MOVE},
+        {"A", PlayerTurnType.ATTACK},
+        {"R", PlayerTurnType.RANGE_FIND},
+    };
+    string chosenKey;
 
     /*
      * Start is called before the first frame update
@@ -43,10 +54,10 @@ public class GameControlScript : MonoBehaviour
     {
         if (gameState == GameState.PLAYER_TURN && playerTurnType == PlayerTurnType.MOVE)
         {
-            lastMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            lastMousePos = camera.ScreenToWorldPoint(Input.mousePosition);
             if (Input.GetMouseButtonDown(1))
             {
-                lastMousePosWClick = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                lastMousePosWClick = camera.ScreenToWorldPoint(Input.mousePosition);
                 hasSelected = true;
             }
         }
@@ -110,29 +121,31 @@ public class GameControlScript : MonoBehaviour
     IEnumerator DoPlayerMoveTurn(GameObject friend)
     {
         hasSelected = false;
-        RaycastHit2D rayHit = Physics2D.Raycast(lastMousePosWClick, Vector2.down);
            
         if (!terrain || !friend)
             yield break;
 
-        while (true)
+        while (!hasSelected)
         {
             moveSelectorRenderer.enabled = true;
             rayHit = Physics2D.Raycast(lastMousePos, Vector2.down);
-            moveSelector.transform.position = rayHit.point;
 
-            if (hasSelected)
+            if ((rayHit.collider.tag != "ground") || (rayHit.distance < 0.1))
             {
-                rayHit = Physics2D.Raycast(lastMousePosWClick, Vector2.down);
-                hasSelected = false;
-                break;
+                // invalid move position logic
+            } 
+            else 
+            {
+                moveSelector.transform.position = rayHit.point;
+                validMovePos = rayHit.point;
             }
 
             yield return new WaitForEndOfFrame();
         }
+        hasSelected = false;
 
         float sTime = Time.time;
-        while (Vector2.Distance(friend.transform.position, rayHit.point) > speed)
+        while (Vector2.Distance(friend.transform.position, validMovePos) > speed)
         {
             if (Time.time - sTime > 5.0) {
                 Debug.Log("Move Timed Out...");
@@ -140,7 +153,7 @@ public class GameControlScript : MonoBehaviour
                 yield break;
             }
 
-            friend.transform.position = Vector2.MoveTowards(friend.transform.position, rayHit.point, speed);
+            friend.transform.position = Vector2.MoveTowards(friend.transform.position, validMovePos, speed);
             yield return new WaitForEndOfFrame();
         }
 
@@ -169,13 +182,8 @@ public class GameControlScript : MonoBehaviour
 
     IEnumerator DecidePlayerTurn()
     {
+        chosenKey = null;
         Debug.Log("Select A Turn Type");
-        var keyMapping = new Dictionary<string, PlayerTurnType>(){
-            {"M", PlayerTurnType.MOVE},
-            {"A", PlayerTurnType.ATTACK},
-            {"R", PlayerTurnType.RANGE_FIND},
-        };
-        string chosenKey = null;
 
         while (chosenKey == null)
         {
@@ -197,9 +205,9 @@ public class GameControlScript : MonoBehaviour
      */
     void BeginLevel()
     {
-        StopAllCoroutines();
         gameState = GameState.PLAYER_TURN;
         moveSelectorRenderer = moveSelector.GetComponent<Renderer>(); 
+        camera = Camera.main;
         moveSelectorRenderer.enabled = false;
         // load the player and enemies from the level file
     }
