@@ -16,7 +16,7 @@ public class GameControlScript : MonoBehaviour
     private Renderer moveSelectorRenderer;
     private RaycastHit2D rayHit;
     private Vector3 validMovePos;
-    private Camera camera;
+    private Camera cam;
 
     private GameState gameState;
     private PlayerTurnType playerTurnType;
@@ -54,10 +54,9 @@ public class GameControlScript : MonoBehaviour
     {
         if (gameState == GameState.PLAYER_TURN && playerTurnType == PlayerTurnType.MOVE)
         {
-            lastMousePos = camera.ScreenToWorldPoint(Input.mousePosition);
+            lastMousePos = cam.ScreenToWorldPoint(Input.mousePosition);
             if (Input.GetMouseButtonDown(1))
             {
-                lastMousePosWClick = camera.ScreenToWorldPoint(Input.mousePosition);
                 hasSelected = true;
             }
         }
@@ -121,12 +120,18 @@ public class GameControlScript : MonoBehaviour
     IEnumerator DoPlayerMoveTurn(GameObject friend)
     {
         hasSelected = false;
+        validMovePos = Vector3.negativeInfinity;
            
         if (!terrain || !friend)
             yield break;
 
-        while (!hasSelected)
+        while (validMovePos.Equals(Vector3.negativeInfinity) | !hasSelected)
         {
+            if (validMovePos.Equals(Vector3.negativeInfinity))
+            {
+                hasSelected = false;
+            }
+
             moveSelectorRenderer.enabled = true;
             rayHit = Physics2D.Raycast(lastMousePos, Vector2.down);
 
@@ -139,6 +144,7 @@ public class GameControlScript : MonoBehaviour
                 moveSelector.transform.position = rayHit.point;
                 validMovePos = rayHit.point;
             }
+
 
             yield return new WaitForEndOfFrame();
         }
@@ -205,11 +211,12 @@ public class GameControlScript : MonoBehaviour
      */
     void BeginLevel()
     {
-        gameState = GameState.PLAYER_TURN;
-        moveSelectorRenderer = moveSelector.GetComponent<Renderer>(); 
-        camera = Camera.main;
-        moveSelectorRenderer.enabled = false;
         // load the player and enemies from the level file
+
+        moveSelectorRenderer = moveSelector.GetComponent<Renderer>(); 
+        moveSelectorRenderer.enabled = false;
+        cam = Camera.main;
+        gameState = GameState.PLAYER_TURN;
     }
 
     /*
