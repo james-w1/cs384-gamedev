@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 enum GameState { BEGIN, PLAYER_TURN, CPU_TURN, END }
 enum PlayerTurnType { MOVE, ATTACK, RANGE_FIND }
@@ -36,6 +37,9 @@ public class GameControlScript : MonoBehaviour
         {"R", PlayerTurnType.RANGE_FIND},
     };
     string chosenKey;
+    
+    public TankSendEvent addAngle;
+    public TankSendEvent addDirection;
 
     /*
      * Start is called before the first frame update
@@ -96,6 +100,7 @@ public class GameControlScript : MonoBehaviour
                         case PlayerTurnType.MOVE:
                             yield return StartCoroutine(DoPlayerMoveTurn(player));
                             break;
+
                     }
                 }
                 gameState = GameState.CPU_TURN;
@@ -113,7 +118,45 @@ public class GameControlScript : MonoBehaviour
 
     IEnumerator DoPlayerAttackTurn(GameObject friend)
     {
+        hasSelected = false;
         Debug.Log("Do Player Attack Turn");
+
+        if (!terrain || !friend)
+            yield break;
+
+        // we first need a loop for selecting the angle and power of the shot.
+        // then we need to be able to fire and have the camera follow the projectile to impact.
+        
+        Debug.Log("select angle for " + friend.name);
+        while (!hasSelected)
+        {
+            if (Input.GetKey(KeyCode.UpArrow))
+                addAngle.Invoke(friend, 1);
+            if (Input.GetKey(KeyCode.DownArrow))
+                addAngle.Invoke(friend, -1);
+            if (Input.GetKey(KeyCode.A))
+                hasSelected = true;
+
+            yield return 0;
+        }
+        hasSelected = false;
+
+        Debug.Log("select power for " + friend.name);
+        while (!hasSelected)
+        {
+            if (Input.GetKey(KeyCode.UpArrow))
+                addDirection.Invoke(friend, 1);
+            if (Input.GetKey(KeyCode.DownArrow))
+                addDirection.Invoke(friend, -1);
+            if (Input.GetKey(KeyCode.A))
+                hasSelected = true;
+
+            yield return 0;
+        }
+        hasSelected = false;
+
+        // fire and follow camera.
+
         yield break;
     }
 
