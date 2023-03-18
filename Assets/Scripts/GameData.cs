@@ -13,6 +13,7 @@ public class GameData : IData
         terrain = iterrain;
         moveSelector = imoveSelector;
         cam = icam;
+        events = new HashSet<string>();
     }
 
     public List<GameObject> friends {get; set;}
@@ -23,4 +24,15 @@ public class GameData : IData
 
     public Vector3 lastMousePos {get; set;}
     public Camera cam {get; set;}
+
+    public HashSet<string> events {get; set;}
+
+    public bool hasEventFired(string e) {
+        if (this.events.Contains(e)) {
+            this.events.Remove(e);
+            return true;
+        }
+
+        return false;
+    }
 }

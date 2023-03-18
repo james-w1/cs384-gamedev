@@ -36,4 +36,10 @@ public class GameControlScript : MonoBehaviour
             newState.Enter(this, gameData);
         }
     }
+    
+    public void InjectEventIntoGameData(string e)
+    {
+        //Debug.Log("caught " + e);
+        gameData.events.Add(e);
+    }
 }

@@ -3,25 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public enum Actions {CHOOSING, SELECTING_MOVE, MOVING, SELECTING_ATTACK}
+public enum Actions {CHOOSING, SELECTING_MOVE, MOVING, SELECTING_ATTACK, ATTACKING}
 
 public class PlayerTurnState : IGameState
 {
     private bool turnDone = false;
-    private bool stoppedMoving = false;
     private GameObject currentFriendly;
     private int friendlyIterator = 0;
     private Actions currentAction = Actions.CHOOSING;
 
     private RaycastHit2D rayHit;
     private Vector3 validMovePos;
+    SpriteRenderer moveRenderer;
 
     public void Enter(GameControlScript gcs, GameData gameData)
     {
         Debug.Log("Entering PlayerTurnState");
         validMovePos = Vector3.negativeInfinity;
-        //TankScript.StoppedEvent.AddListener(StoppedEvent);
-
         return;
     }
 
@@ -35,17 +33,28 @@ public class PlayerTurnState : IGameState
         switch (currentAction)
         {
             case Actions.CHOOSING: 
-                currentAction = Actions.SELECTING_MOVE;
+                if (Input.GetKey(KeyCode.M))
+                    currentAction = Actions.SELECTING_MOVE;
+                if (Input.GetKey(KeyCode.A))
+                    currentAction = Actions.SELECTING_ATTACK;
                 break;
             case Actions.SELECTING_MOVE: 
+                moveRenderer = gameData.moveSelector.GetComponent<SpriteRenderer>();
                 movingMethod(gcs, gameData);
                 break;
             case Actions.MOVING:
-                if (stoppedMoving)
+                if (gameData.hasEventFired("Tank Stopped"))
                 {
+                    currentAction = Actions.CHOOSING;
+                    moveRenderer.enabled = false;
                     nextFriendly(gameData);
-                    stoppedMoving = false;
                 }
+                break;
+            case Actions.SELECTING_ATTACK: 
+                attackingMethod(gcs, gameData);
+                break;
+            case Actions.ATTACKING: 
+                    currentAction = Actions.CHOOSING;
                 break;
         }
         
@@ -55,6 +64,7 @@ public class PlayerTurnState : IGameState
     public void movingMethod(GameControlScript gcs, GameData gameData)
     {
         currentFriendly = gameData.friends[friendlyIterator];
+        moveRenderer.enabled = true;
 
         rayHit = Physics2D.Raycast(gameData.lastMousePos, Vector2.down);
         if (rayHit.collider.tag != "ground" || rayHit.distance < 0.1) {
@@ -70,10 +80,21 @@ public class PlayerTurnState : IGameState
         }
     }
 
-    public void StoppedEvent()
+    public void attackingMethod(GameControlScript gcs, GameData gameData)
     {
-        Debug.Log("test");
-        stoppedMoving = true;
+        currentFriendly = gameData.friends[friendlyIterator];
+
+        if (Input.GetKey(KeyCode.UpArrow))
+            currentFriendly.SendMessage("UpdateAngle", 1);
+        if (Input.GetKey(KeyCode.DownArrow))
+            currentFriendly.SendMessage("UpdateAngle", -1);
+
+        if (Input.GetKey(KeyCode.A))
+        {
+            currentFriendly.SendMessage("Fire");
+            currentAction = Actions.ATTACKING;
+            return;
+        }
     }
 
     public void nextFriendly(GameData gameData)

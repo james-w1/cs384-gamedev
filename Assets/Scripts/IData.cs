@@ -13,4 +13,6 @@ public interface IData
 
     public Vector3 lastMousePos {get; set;}
     public Camera cam {get; set;}
+
+    public HashSet<string> events {get; set;}
 }

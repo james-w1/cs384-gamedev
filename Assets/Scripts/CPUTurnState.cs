@@ -5,22 +5,15 @@ using UnityEngine.Events;
 
 public class CPUTurnState : IGameState
 {
-    private bool waitDone = false;
-    private float enterTime;
-
     public void Enter(GameControlScript gcs, GameData gamedata)
     {
-        Debug.Log("Entering PlayerTurnState");
-        enterTime = Time.time;
+        Debug.Log("Entering CPU Turn State");
         return;
     }
 
     public IGameState Tick(GameControlScript gcs, GameData gameData)
     {
-        if (enterTime - Time.time > 5.0f)
-            return new PlayerTurnState();
-
-        return null;
+        return new PlayerTurnState();
     }
 
     public void Exit(GameControlScript gcs)

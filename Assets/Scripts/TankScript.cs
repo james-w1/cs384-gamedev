@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+public enum AmmoType = {HEAT, APFSDS, HEP, ATGM}
+
 public class TankScript : MonoBehaviour
 {
     [SerializeField] private string userName;
     [SerializeField] private int health;
+    [SerializeField] private int ammo;
     [SerializeField] private bool knockedOut;
+
+    public bool stopped = false;
 
     private float speed = 0.003f;
 
@@ -15,11 +20,15 @@ public class TankScript : MonoBehaviour
     private float aimPower;
     private float sTime;
 
-    public static UnityEvent StoppedEvent;
+    private float minElevation = -8;
+    private float maxElevation = 20;
+
+    [SerializeField] public UnityEvent<string> StoppedEvent;
 
     void Start()
     {
         this.health = 100;
+        this.ammo = 10;
         aimDirection = new Vector2(0, 0);
         aimPower = 0.0f;
     }
@@ -30,20 +39,33 @@ public class TankScript : MonoBehaviour
         // set sprite to knocked out state.
     }
 
-    public void updatePower(GameObject obj, float f)
+    public void Fire()
     {
-        if (this != obj)
+        if (ammo <= 0)
             return;
 
+        Debug.Log("Power = " + this.aimPower);
+        Debug.Log("angle = " + this.aimDirection);
+    }
+
+    public void UpdatePower(float f)
+    {
         this.aimPower += f;
     }
 
-    public void updateDirection(GameObject obj, float f)
+    public void UpdateAngle(float f)
     {
-        if (this != obj)
-            return;
+        this.aimDirection.x = clampElevation(this.aimDirection.x + f);
+    }
 
-        this.aimDirection.x += f;
+    float clampElevation(float f)
+    {
+        if (f > maxElevation)
+            f = maxElevation;
+        if (f < minElevation)
+            f = minElevation;
+
+        return f;
     }
 
     public void MoveTankTo(Vector3 point)
@@ -54,11 +76,11 @@ public class TankScript : MonoBehaviour
 
     IEnumerator movingCoroutine(Vector3 point)
     {
-        while (Vector2.Distance(this.transform.position, point) > speed)
+        while (Vector2.Distance(this.transform.position, point) > speed * 10)
         {
             if (Time.time - sTime > 5.0f)
             {
-                StoppedEvent?.Invoke();
+                StoppedEvent?.Invoke("Tank Stopped");
                 yield break;
             }
 
@@ -66,8 +88,8 @@ public class TankScript : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
+        StoppedEvent?.Invoke("Tank Stopped");
         this.transform.position = point;
-        StoppedEvent?.Invoke();
     }
 
     /*
