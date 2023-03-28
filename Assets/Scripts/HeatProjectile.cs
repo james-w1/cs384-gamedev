@@ -2,22 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Tilemaps;
 
 public class HeatProjectile : Projectile 
 {
-    public HeatProjectile(float explosiveMass, float velocity, float damage)
+    public HeatProjectile() 
     {
-        _explosiveMass = explosiveMass;
-        _velocity = velocity;
-        _damage = damage;
+
     }
 
-    public override void Explode(Collision collision)
+    public override void Init()
     {
-        return;
+        explosiveMass = 0.5f;
+        velocity = 0.0f;
+        damage = 100.0f;
     }
 
-    public override void HitTarget(Collision collision)
+    public override void HitTarget(Collision2D collision)
     {
         return;
     }

@@ -2,38 +2,64 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Tilemaps;
 
 public abstract class Projectile : MonoBehaviour
 {
-    public float _explosiveMass;
-    public float _velocity;
-    public float _damage;
+    public float explosiveMass;
+    public float velocity;
+    public float damage;
+    public Vector2 impactPoint;
+    public Tilemap tilemap;
+
+    public GameObject explosion;
+
+    public void Start()
+    {
+        tilemap = GameObject.Find("/Grid/Ground").GetComponent<Tilemap>();
+        Init();
+    }
 
     public Projectile()
-    {}
-
-    public Projectile(float explosiveMass, float velocity, float damage)
     {
-        _explosiveMass = explosiveMass;
-        _velocity = velocity;
-        _damage = damage;
+
     }
 
-    public Projectile(float velocity, float damage)
+    public abstract void Init();
+
+    public void Explode(Collision2D collision)
     {
-        _explosiveMass = 0;
-        _velocity = velocity;
-        _damage = damage;
+        Destroy(gameObject);
+        impactPoint = collision.GetContact(0).point;
+
+        Instantiate(explosion, impactPoint, Quaternion.identity);
+
+        // remove the tilemap tiles in the radius of the explosion
+        for (float x = impactPoint.x - explosiveMass; x < impactPoint.x + explosiveMass; x += 0.01f)
+        {
+            for (float y = impactPoint.y - explosiveMass; y < impactPoint.y + explosiveMass; y += 0.01f)
+            {
+                if (Vector2.Distance(impactPoint, new Vector2(x, y)) < explosiveMass)
+                {
+                    var tilePos = tilemap.WorldToCell(new Vector2(x, y));
+                    tilemap.SetTile(tilePos, null);
+                }
+            }
+        }
+
+        // work out distance between enemy and explosion then deal dmg
+        
+        return;
     }
 
-    public abstract void Explode(Collision collision);
-    public abstract void HitTarget(Collision collision);
+    public abstract void HitTarget(Collision2D collision);
 
-    void OnCollisionEnter(Collision collision)
+    void OnCollisionEnter2D(Collision2D collision)
     {
+
         HitTarget(collision);
 
-        if (_explosiveMass > 0)
+        if (explosiveMass > 0)
             Explode(collision);
     }       
 }

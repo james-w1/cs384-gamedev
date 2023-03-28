@@ -20,15 +20,16 @@ public class PlayerTurnState : IGameState
     {
         Debug.Log("Entering PlayerTurnState");
         validMovePos = Vector3.negativeInfinity;
+        friendlyIterator = 0;
         return;
     }
 
     public IGameState Tick(GameControlScript gcs, GameData gameData)
     {
-
         // on the end of the player turn we hand over to the CPU.
         if (turnDone)
             return new CPUTurnState();
+
 
         switch (currentAction)
         {
@@ -55,6 +56,7 @@ public class PlayerTurnState : IGameState
                 break;
             case Actions.ATTACKING: 
                     currentAction = Actions.CHOOSING;
+                    nextFriendly(gameData);
                 break;
         }
         
@@ -65,6 +67,7 @@ public class PlayerTurnState : IGameState
     {
         currentFriendly = gameData.friends[friendlyIterator];
         moveRenderer.enabled = true;
+        moveCamToPlayer(gameData.cam, currentFriendly);
 
         rayHit = Physics2D.Raycast(gameData.lastMousePos, Vector2.down);
         if (rayHit.collider.tag != "ground" || rayHit.distance < 0.1) {
@@ -83,11 +86,12 @@ public class PlayerTurnState : IGameState
     public void attackingMethod(GameControlScript gcs, GameData gameData)
     {
         currentFriendly = gameData.friends[friendlyIterator];
+        moveCamToPlayer(gameData.cam, currentFriendly);
 
         if (Input.GetKey(KeyCode.UpArrow))
-            currentFriendly.SendMessage("UpdateAngle", 1);
+            currentFriendly.SendMessage("UpdateAngle", -0.2f);
         if (Input.GetKey(KeyCode.DownArrow))
-            currentFriendly.SendMessage("UpdateAngle", -1);
+            currentFriendly.SendMessage("UpdateAngle", 0.2f);
 
         if (Input.GetKey(KeyCode.A))
         {
@@ -97,9 +101,15 @@ public class PlayerTurnState : IGameState
         }
     }
 
+    public void moveCamToPlayer(Camera camera, GameObject player)
+    {
+        if (Vector2.Distance(camera.transform.position, player.transform.position) > 1.0f)
+            camera.transform.position = Vector3.Lerp(camera.transform.position, new Vector3(player.transform.position.x, player.transform.position.y, -10), Time.deltaTime);
+    }
+
     public void nextFriendly(GameData gameData)
     {
-        if (gameData.friends.Count > friendlyIterator + 2)
+        if ((friendlyIterator + 1) < gameData.friends.Count)
         {
             friendlyIterator++;
             currentAction = Actions.CHOOSING;
