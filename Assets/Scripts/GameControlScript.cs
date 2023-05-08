@@ -8,6 +8,8 @@ public class GameControlScript : MonoBehaviour
     private IGameState currentState = new PlayerTurnState();
     private GameData gameData;
 
+    public UnityEvent TurnUpdate;
+
     [SerializeField] private List<GameObject> _friendlies;
     [SerializeField] private List<GameObject> _enemies;
 
@@ -31,6 +33,8 @@ public class GameControlScript : MonoBehaviour
 
         if (newState != null)
         {
+            TurnUpdate.Invoke();
+
             currentState.Exit(this);
             currentState = newState;
             newState.Enter(this, gameData);

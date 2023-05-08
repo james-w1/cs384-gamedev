@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class AchievementSystem : MonoBehaviour
 {
     private Queue<Achievement> achQueue = new Queue<Achievement>();
+    [SerializeField] private TMP_Text AchText;
+    private Achievement currentAch;
 
     public void AddToQueue(Achievement ach)
     {
@@ -37,7 +40,9 @@ public class AchievementSystem : MonoBehaviour
         {
             if (achQueue.Count > 0)
             {
-                Unlock(achQueue.Dequeue());
+                currentAch = achQueue.Dequeue();
+                Unlock(currentAch);
+                AchText.text = currentAch.name + " unlocked";
                 yield return new WaitForSeconds(5f);
             }
         }

@@ -10,7 +10,8 @@ public class Achievement : ScriptableObject
 {
     [SerializeField] private string achName;
     [SerializeField] private string achDescription;
-    [SerializeField] private TMP_Text AchText;
+    //[SerializeField] private TMP_Text AchText;
+    
     private bool unlocked;
 
     public void Start()
@@ -24,7 +25,7 @@ public class Achievement : ScriptableObject
         {
             unlocked = false;
             // unlock animation in UI
-            AchText.text = name + " unlocked";
+            //AchText.text = name + " unlocked";
         }
     }
 

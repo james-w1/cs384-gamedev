@@ -17,11 +17,12 @@ public class TurnScript : MonoBehaviour
 
     private void updateRenderedText()
     {
-        
+        textObject.text = "Turn: " + turnType[0] + " " + turnNumber;
     }
 
     public void IncrementTurnTimer()
     {
         turnNumber++;
+        updateRenderedText();
     }
 }
