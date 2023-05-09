@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -9,6 +10,7 @@ public class GameControlScript : MonoBehaviour
     private GameData gameData;
 
     public UnityEvent TurnUpdate;
+    public UnityEvent GameWon;
 
     [SerializeField] private List<GameObject> _friendlies;
     [SerializeField] private List<GameObject> _enemies;
@@ -35,10 +37,18 @@ public class GameControlScript : MonoBehaviour
         {
             TurnUpdate.Invoke();
 
+            if (gameData.enemies.Count <= 0)
+                GameWon.Invoke();
+
             currentState.Exit(this);
             currentState = newState;
             newState.Enter(this, gameData);
         }
+    }
+
+    public void ExitToMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
     
     public void InjectEventIntoGameData(string e)

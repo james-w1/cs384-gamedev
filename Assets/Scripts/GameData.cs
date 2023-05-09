@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using System;
 
+[Serializable]
 public class GameData : IData
 {
     public GameData(List<GameObject> ifriends, List<GameObject> ienemies, 
@@ -26,6 +28,10 @@ public class GameData : IData
     public Camera cam {get; set;}
 
     public HashSet<string> events {get; set;}
+
+    public int turn;
+
+    public PlayerSave currentPlayer;
 
     public bool hasEventFired(string e) {
         if (this.events.Contains(e)) {

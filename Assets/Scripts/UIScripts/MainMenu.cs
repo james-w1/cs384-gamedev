@@ -28,6 +28,11 @@ public class MainMenu : MonoBehaviour
         mixer.SetFloat("MainVol", Mathf.Log10(sliderValue) * 20);
     }
 
+    public void GoToPlayerScreen() 
+    {
+        SceneManager.LoadScene("PlayerSelection");
+    }
+
     public void PlayGame() 
     {
         SceneManager.LoadScene("Loading");
