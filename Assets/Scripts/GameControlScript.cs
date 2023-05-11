@@ -32,46 +32,38 @@ public class GameControlScript : MonoBehaviour
         pausePanel.SetActive(false);
         generateTerrain();
         gameData = new GameData(_friendlies, _enemies, _terrain, _moveSelector, Camera.main);
+        TurnUpdate.Invoke();
     }
 
     private float topY = 0.0f;
     private float previousY = 0.0f;
+    private float count = 0;
 
     void generateTerrain()
     {
-        for (float x = -21; x < 21; x += 0.05f)
+        for (float x = -22; x < 22; x += 0.05f)
         {
-            topY = previousY + UnityEngine.Random.Range(-0.03f, 0.03f);
+            count+= 0.05f;
+            if (count > 0.5f)
+            {
+                topY = previousY + UnityEngine.Random.Range(-0.1f, 0.1f);
+                count = 0f;
+            } else {
+                topY = previousY + UnityEngine.Random.Range(-0.05f, 0.05f);
+            }
 
             if (topY <= -3.0f)
                 topY = -3.0f;
 
-            for (float y = topY; y > -3; y -= 0.05f)
+            if (topY >= 1.0f)
+                topY = 1.0f;
+
+            for (float y = topY; y > -5; y -= 0.05f)
             {
                 var tilePos = tilemap.WorldToCell(new Vector2(x, y));
                 tilemap.SetTile(tilePos, tile);
             }
             previousY = topY;
-        }
-    }
-
-    float width = 20, height = 3, displace = 3 / 4, roughness = 0.7f;
-
-    void newTerrainGen()
-    {
-        float[] points;
-        //auto power = Mathf.Pow(2, Mathf.Ceil(Mathf.Log(width) / (Mathf.Log(2))));
-
-        points[0] = height/2 + (UnityEngine.Random.Range(0.0f, 1.0f)*displace*2) - displace;
-        points[width] = height/2 + (UnityEngine.Random.Range(0.0f, 1.0f)*displace*2) - displace;
-        displace *= roughness;
-
-        for (float i = 1; i < width; i *= 2)
-        {
-            for (float j = (width / i) / 2; j < width; j += width / i)
-            {
-                
-            }
         }
     }
 

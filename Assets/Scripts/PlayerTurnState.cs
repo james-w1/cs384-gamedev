@@ -18,7 +18,6 @@ public class PlayerTurnState : IGameState
 
     public void Enter(GameControlScript gcs, GameData gameData)
     {
-        Debug.Log("Entering PlayerTurnState");
         validMovePos = Vector3.negativeInfinity;
         friendlyIterator = 0;
         return;

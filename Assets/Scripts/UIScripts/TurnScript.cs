@@ -7,7 +7,8 @@ using TMPro;
 public class TurnScript : MonoBehaviour
 {
     private int turnNumber;
-    private string[] turnType = {"Waiting", "Player", "CPU"};
+    private int turnNoType;
+    private string[] turnType = {"", "Player", "CPU", ""};
     [SerializeField] private TMP_Text textObject;
 
     private void Start()
@@ -17,12 +18,15 @@ public class TurnScript : MonoBehaviour
 
     private void updateRenderedText()
     {
-        textObject.text = "Turn: " + turnType[0] + " " + turnNumber;
+        if (turnNoType > 2)
+            turnNoType = 1;
+        textObject.text = "Turn: " + turnNumber + " : " + turnType[turnNoType];
     }
 
     public void IncrementTurnTimer()
     {
         turnNumber++;
+        turnNoType++;
         updateRenderedText();
     }
 }
