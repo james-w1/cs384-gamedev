@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using System;
+using UnityEngine.Tilemaps;
 
 public class GameControlScript : MonoBehaviour
 {
@@ -22,11 +23,36 @@ public class GameControlScript : MonoBehaviour
     [SerializeField] private GameObject panel; 
     [SerializeField] private GameObject pausePanel; 
 
+    [SerializeField] private Tile tile; 
+    [SerializeField] private Tilemap tilemap;
+
     public void Start()
     {
         panel.SetActive(false);
         pausePanel.SetActive(false);
+        generateTerrain();
         gameData = new GameData(_friendlies, _enemies, _terrain, _moveSelector, Camera.main);
+    }
+
+    private float topY = 0.0f;
+    private float previousY = 0.0f;
+
+    void generateTerrain()
+    {
+        for (float x = -200; x < 200; x += 0.05f)
+        {
+            topY = previousY + UnityEngine.Random.Range(-0.03f, 0.03f);
+
+            if (topY <= -3.0f)
+                topY = -3.0f;
+
+            for (float y = topY; y > -3; y -= 0.05f)
+            {
+                var tilePos = tilemap.WorldToCell(new Vector2(x, y));
+                tilemap.SetTile(tilePos, tile);
+            }
+            previousY = topY;
+        }
     }
 
     void Update()
@@ -57,7 +83,6 @@ public class GameControlScript : MonoBehaviour
         if (newState != null)
         {
             TurnUpdate.Invoke();
-
 
             currentState.Exit(this);
             currentState = newState;

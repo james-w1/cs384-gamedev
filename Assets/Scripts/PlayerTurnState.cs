@@ -48,11 +48,6 @@ public class PlayerTurnState : IGameState
                     gameData.playerChoosing = false;
                     currentAction = Actions.SELECTING_ATTACK;
                 }
-
-                //if (Input.GetKey(KeyCode.M))
-                //    currentAction = Actions.SELECTING_MOVE;
-                //if (Input.GetKey(KeyCode.A))
-                //    currentAction = Actions.SELECTING_ATTACK;
                 break;
             case Actions.SELECTING_MOVE: 
                 moveRenderer = gameData.moveSelector.GetComponent<SpriteRenderer>();
