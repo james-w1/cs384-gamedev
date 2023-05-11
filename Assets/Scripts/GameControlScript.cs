@@ -39,7 +39,7 @@ public class GameControlScript : MonoBehaviour
 
     void generateTerrain()
     {
-        for (float x = -200; x < 200; x += 0.05f)
+        for (float x = -21; x < 21; x += 0.05f)
         {
             topY = previousY + UnityEngine.Random.Range(-0.03f, 0.03f);
 
@@ -52,6 +52,26 @@ public class GameControlScript : MonoBehaviour
                 tilemap.SetTile(tilePos, tile);
             }
             previousY = topY;
+        }
+    }
+
+    float width = 20, height = 3, displace = 3 / 4, roughness = 0.7f;
+
+    void newTerrainGen()
+    {
+        float[] points;
+        //auto power = Mathf.Pow(2, Mathf.Ceil(Mathf.Log(width) / (Mathf.Log(2))));
+
+        points[0] = height/2 + (UnityEngine.Random.Range(0.0f, 1.0f)*displace*2) - displace;
+        points[width] = height/2 + (UnityEngine.Random.Range(0.0f, 1.0f)*displace*2) - displace;
+        displace *= roughness;
+
+        for (float i = 1; i < width; i *= 2)
+        {
+            for (float j = (width / i) / 2; j < width; j += width / i)
+            {
+                
+            }
         }
     }
 
@@ -90,7 +110,7 @@ public class GameControlScript : MonoBehaviour
         }
     }
 
-    void exitToMenu()
+    public void exitToMenu()
     {
         SceneManager.LoadScene("MainMenu");
     }
@@ -101,9 +121,10 @@ public class GameControlScript : MonoBehaviour
         pausePanel.SetActive(gameData.gamePaused);
     }
     
+    // Adds a gameEvent to the HashSet containing fired gameEvents. 
+    // There is probably a better way to do this
     public void InjectEventIntoGameData(string e)
     {
-        //Debug.Log("caught " + e);
         gameData.events.Add(e);
     }
 
