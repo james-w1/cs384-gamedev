@@ -18,14 +18,18 @@ public class GameControlScript : MonoBehaviour
     [SerializeField] private GameObject _terrain;
     [SerializeField] private GameObject _moveSelector;
 
+    [SerializeField] private GameObject panel; 
+
     public void Start()
     {
+        panel.SetActive(false);
         gameData = new GameData(_friendlies, _enemies, _terrain, _moveSelector, Camera.main);
     }
 
     void Update()
     {
         gameData.lastMousePos = gameData.cam.ScreenToWorldPoint(Input.mousePosition);
+        panel.SetActive(gameData.playerChoosing);
         UpdateState();
     }
 
@@ -36,6 +40,7 @@ public class GameControlScript : MonoBehaviour
         if (newState != null)
         {
             TurnUpdate.Invoke();
+
 
             if (gameData.enemies.Count <= 0)
                 GameWon.Invoke();

@@ -34,10 +34,23 @@ public class PlayerTurnState : IGameState
         switch (currentAction)
         {
             case Actions.CHOOSING: 
-                if (Input.GetKey(KeyCode.M))
+                gameData.playerChoosing = true;
+
+                if (gameData.hasEventFired("Selected Move"))
+                {
+                    gameData.playerChoosing = false;
                     currentAction = Actions.SELECTING_MOVE;
-                if (Input.GetKey(KeyCode.A))
+                }
+                if (gameData.hasEventFired("Selected Attack"))
+                {
+                    gameData.playerChoosing = false;
                     currentAction = Actions.SELECTING_ATTACK;
+                }
+
+                //if (Input.GetKey(KeyCode.M))
+                //    currentAction = Actions.SELECTING_MOVE;
+                //if (Input.GetKey(KeyCode.A))
+                //    currentAction = Actions.SELECTING_ATTACK;
                 break;
             case Actions.SELECTING_MOVE: 
                 moveRenderer = gameData.moveSelector.GetComponent<SpriteRenderer>();
@@ -60,6 +73,12 @@ public class PlayerTurnState : IGameState
                 break;
         }
         
+        return null;
+    }
+
+    private IEnumerator attackCooldown()
+    {
+        currentAction = Actions.CHOOSING;
         return null;
     }
 
