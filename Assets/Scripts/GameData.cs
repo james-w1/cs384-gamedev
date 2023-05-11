@@ -17,6 +17,8 @@ public class GameData : IData
         cam = icam;
         events = new HashSet<string>();
         playerChoosing = false;
+        playerAttacking = false;
+        gamePaused = false;
     }
 
     public List<GameObject> friends {get; set;}
@@ -33,6 +35,9 @@ public class GameData : IData
     public int turn;
 
     public bool playerChoosing {get; set;}
+    public bool playerAttacking {get; set;}
+
+    public bool gamePaused {get; set;}
 
     public PlayerSave currentPlayer;
 

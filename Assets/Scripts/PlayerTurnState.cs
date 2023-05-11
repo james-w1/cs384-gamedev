@@ -30,6 +30,8 @@ public class PlayerTurnState : IGameState
         if (turnDone)
             return new CPUTurnState();
 
+        if (gameData.gamePaused)
+            return null;
 
         switch (currentAction)
         {
@@ -68,17 +70,15 @@ public class PlayerTurnState : IGameState
                 attackingMethod(gcs, gameData);
                 break;
             case Actions.ATTACKING: 
+                //currentAction = Actions.CHOOSING;
+                if (!gameData.playerAttacking)
+                {
                     currentAction = Actions.CHOOSING;
                     nextFriendly(gameData);
+                }
                 break;
         }
         
-        return null;
-    }
-
-    private IEnumerator attackCooldown()
-    {
-        currentAction = Actions.CHOOSING;
         return null;
     }
 
@@ -112,10 +112,11 @@ public class PlayerTurnState : IGameState
         if (Input.GetKey(KeyCode.DownArrow))
             currentFriendly.SendMessage("UpdateAngle", 0.2f);
 
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.Return))
         {
             currentFriendly.SendMessage("Fire");
             currentAction = Actions.ATTACKING;
+            gameData.playerAttacking = true;
             return;
         }
     }
