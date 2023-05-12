@@ -20,6 +20,8 @@ public class HeatProjectile : Projectile
 
     public override void HitTarget(Collision2D collision)
     {
+        
+
         return;
     }
 }

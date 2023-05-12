@@ -19,6 +19,7 @@ public class GameData : IData
         playerChoosing = false;
         playerAttacking = false;
         gamePaused = false;
+        shotsFired = 0;
     }
 
     public List<GameObject> friends {get; set;}
@@ -33,6 +34,7 @@ public class GameData : IData
     public HashSet<string> events {get; set;}
 
     public int turn;
+    public int shotsFired;
 
     public bool playerChoosing {get; set;}
     public bool playerAttacking {get; set;}
@@ -49,4 +51,5 @@ public class GameData : IData
 
         return false;
     }
+
 }

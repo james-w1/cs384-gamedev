@@ -8,13 +8,19 @@ public class CPUTurnState : IGameState
     private int enemyIterator = 0;
     private GameObject currentEnemy;
     private bool hasMoved;
+    private bool hasShot;
     private bool turnDone;
+    private bool chosenTurnType;
     private Vector3 currentPos;
+    private int rand;
 
     public void Enter(GameControlScript gcs, GameData gamedata)
     {
         hasMoved = false;
+        hasShot = false;
         turnDone = false;
+        chosenTurnType = false;
+        rand = 999;
         currentPos = Vector3.negativeInfinity;
         return;
     }
@@ -23,11 +29,33 @@ public class CPUTurnState : IGameState
     {
         currentEnemy = gameData.enemies[enemyIterator];
 
+        if (currentEnemy == null)
+        {
+            gameData.events.Add("Enemy Killed");
+            gameData.enemies.RemoveAt(enemyIterator);
+            nextTank(gameData);
+        }
+
         if (turnDone)
             return new PlayerTurnState();
 
         moveCamToPlayer(gameData.cam, currentEnemy);
 
+        if (!chosenTurnType) {
+            rand = Random.Range(0, 2);
+            chosenTurnType = true;
+        } else {
+            if (rand == 0)
+                movingTurn(gameData);
+
+            if (rand == 1)
+                attackingTurn(gameData);
+        }
+        return null;
+    }
+
+    private void movingTurn(GameData gameData)
+    {
         if (!hasMoved)
         {
             currentPos = currentEnemy.transform.position;
@@ -39,11 +67,24 @@ public class CPUTurnState : IGameState
 
         if (gameData.hasEventFired("Tank Stopped"))
         {
-            nextTank(gameData);
             hasMoved = false;
+            chosenTurnType = false;
+            nextTank(gameData);
         }
+    }
 
-        return null;
+    private void attackingTurn(GameData gameData)
+    {
+        // scuffed
+        currentEnemy.SendMessage("UpdatePower", -1000f);
+
+        if (!hasShot)
+        {
+            hasShot = true;
+            currentEnemy.SendMessage("Fire");
+        }
+        chosenTurnType = false;
+        nextTank(gameData);
     }
 
     public void nextTank(GameData gameData)

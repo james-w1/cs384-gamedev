@@ -7,44 +7,26 @@ public class AchievementSystem : MonoBehaviour
 {
     private Queue<Achievement> achQueue = new Queue<Achievement>();
     [SerializeField] private TMP_Text AchText;
-    private Achievement currentAch;
-
-    public void AddToQueue(Achievement ach)
-    {
-        achQueue.Enqueue(ach);
-    }
-
-    private void Start()
-    {
-        StartCoroutine("AchQueueCheck");
-    }
+    [SerializeField] private Achievement[] achievements;
 
     private void OnEnable()
     {
-        
+
     }
 
-    private void OnDisable()
+    public void oneShotAch()
     {
-        
+        UnlockAch(new Achievement("JuanDeeg", "Finish Game With One Shot"));
     }
 
-    private void Unlock(Achievement ach)
+    public void lessThan5()
     {
+        UnlockAch(new Achievement("<5", "Finish the level in < 5 turns"));
+    }
+
+    private void UnlockAch(Achievement ach)
+    {
+        AchText.text = ach.achName + " unlocked";
         ach.Unlock();
-    }
-
-    private IEnumerator AchQueueCheck()
-    {
-        for (; ;)
-        {
-            if (achQueue.Count > 0)
-            {
-                currentAch = achQueue.Dequeue();
-                Unlock(currentAch);
-                AchText.text = currentAch.name + " unlocked";
-                yield return new WaitForSeconds(5f);
-            }
-        }
     }
 }

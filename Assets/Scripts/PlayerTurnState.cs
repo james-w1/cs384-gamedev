@@ -25,6 +25,7 @@ public class PlayerTurnState : IGameState
 
     public IGameState Tick(GameControlScript gcs, GameData gameData)
     {
+        currentFriendly = gameData.friends[friendlyIterator];
         // on the end of the player turn we hand over to the CPU.
         if (turnDone)
             return new CPUTurnState();
@@ -32,6 +33,12 @@ public class PlayerTurnState : IGameState
         if (gameData.gamePaused)
             return null;
 
+        if (currentFriendly == null)
+        {
+            gameData.events.Add("Friendly Killed");
+            gameData.friends.RemoveAt(friendlyIterator);
+            nextFriendly(gameData);
+        }
         switch (currentAction)
         {
             case Actions.CHOOSING: 
@@ -111,6 +118,7 @@ public class PlayerTurnState : IGameState
             currentFriendly.SendMessage("Fire");
             currentAction = Actions.ATTACKING;
             gameData.playerAttacking = true;
+            gameData.shotsFired++;
             return;
         }
     }

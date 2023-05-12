@@ -5,28 +5,27 @@ using UnityEngine.UI;
 using TMPro;
 using System;
 
-[CreateAssetMenu(fileName = "Data", 
-    menuName = "Achievement/newAchievement", order = 1)]
-public class Achievement : ScriptableObject
+public class Achievement : IAch
 {
-    [SerializeField] private string achName;
-    [SerializeField] private string achDescription;
-    //[SerializeField] private TMP_Text AchText;
-    
+    public string achName;
+    public string achDescription;
     private bool unlocked;
 
-    public void Start()
+    public Achievement(string n, string d)
     {
+        this.achName = n;
+        this.achDescription = d;
+        unlocked = false;
     }
 
-    // Update is called once per frame
     public void Unlock()
     {
         if (!unlocked)
         {
-            unlocked = false;
-            // unlock animation in UI
-            //AchText.text = name + " unlocked";
+            unlocked = true;
+            GlobalData.loadedPlayer.unlockedAchievements.Add(this.achName);
+            Debug.Log(GlobalData.loadedPlayer.unlockedAchievements[0]);
+            FileHandlingScript.SavePlayerData(GlobalData.loadedPlayer.playerName, GlobalData.loadedPlayer);
         }
     }
 

@@ -37,16 +37,17 @@ public class TankScript : MonoBehaviour
     {
         health = 100;
         ammo = new List<AmmoType>();
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < GlobalData.loadedPlayer.ammo.Count; i++)
             ammo.Add(AmmoType.HEAT);
         selectedAmmo = AmmoType.HEAT;
         aimAngle = 0f;
-        aimPower = 1000.0f; // CHANGE!~
+        aimPower = 1000.0f;
     }
 
     public void knockOut()
     {
         knockedOut = true;
+        Destroy(this.gameObject);
         // set sprite to knocked out state.
     }
 
@@ -57,7 +58,9 @@ public class TankScript : MonoBehaviour
 
         if (checkAndRemoveAmmo(selectedAmmo))
         {
-            var clone = Instantiate(projectile, endOfCannon.transform.position, cannon.transform.rotation) as Rigidbody2D;
+            var clone = 
+                Instantiate(projectile, endOfCannon.transform.position, cannon.transform.rotation)
+                as Rigidbody2D;
             clone.GetComponent<Rigidbody2D>().AddForce(cannon.transform.right * aimPower);
         } else {
             Debug.Log("no ammo");
@@ -123,6 +126,8 @@ public class TankScript : MonoBehaviour
     public bool damage(int damage)
     {
         health -= damage;
+
+        Debug.Log(this);
 
         if (health <= 0)
             knockOut();

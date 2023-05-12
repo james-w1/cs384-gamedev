@@ -11,12 +11,14 @@ public abstract class Projectile : MonoBehaviour
     public float damage;
     public Vector2 impactPoint;
     public Tilemap tilemap;
+    public GameObject[] tanks;
 
     public GameObject explosion;
 
     public void Start()
     {
         tilemap = GameObject.Find("/Grid/Ground").GetComponent<Tilemap>();
+        tanks = GameObject.FindGameObjectsWithTag("tank");
         Init();
     }
 
@@ -47,6 +49,16 @@ public abstract class Projectile : MonoBehaviour
             }
         }
 
+        var colliders = Physics2D.OverlapCircleAll(impactPoint, explosiveMass);
+        foreach (var collider in colliders)
+        {
+            //Debug.Log($"{collider.gameObject.name} is nearby");
+            foreach (GameObject tank in tanks) {
+                if (tank == collider.gameObject) {
+                    tank.SendMessage("damage", 100);
+                }
+            }
+        }
         // work out distance between enemy and explosion then deal dmg
         
         return;
@@ -56,7 +68,6 @@ public abstract class Projectile : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-
         HitTarget(collision);
 
         if (explosiveMass > 0)
